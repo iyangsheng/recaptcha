@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>reCAPTCHA v2 Demo</title>
+    <script type="text/javascript" src="https://recaptcha.net/recaptcha/api.js"></script>
+    <script src="http://libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+    <div class="g-recaptcha" data-sitekey="6Lcjb1UUAAAAANG95m8JkcsAT3y7_R5dTtJxoT1X" data-callback="flushStatus"></div>
+    <br />
+    <p style="display:inline;color:red">验证状态: </p><span id="sp1"></span>
+    <br />
+    <p style="display:inline;color:red">回调结果: </p><span id="sp2"></span>
+    <br />
+    <p style="display:inline;color:red">取值结果: </p><span id="sp3"></span>
+    <br />
+    <p style="display:inline;color:red">最终状态: </p><span id="sp4"></span>
+    <script>
+        /*
+        获取方法：
+        1. grecaptcha.getResponse()
+        2. data-callback
+        （以上两种方式取值均一致）
+        */
+        function flushStatus(data) {
+            let verifyCode = grecaptcha.getResponse();
+            document.getElementById("sp2").innerText = verifyCode;//直接取得g-recaptcha-response
+            document.getElementById("sp3").innerText = data;//利用回调函数取得
+
+            if (!verifyCode) {//如果g-recaptcha-response不为空
+                document.getElementById("sp1").innerText = "没有验证";
+            } else {
+                document.getElementById("sp1").innerText = "已经验证";
+                $.ajax({
+                    type: "POST",
+                    method: "POST",
+                    url: 'http://localhost:3000/graphql',
+                    data: JSON.stringify({
+                        query: 'query recaptchaV2{recaptchaV2(verifyCode: "'+ verifyCode +'"){code message captchaResult{success challengeTs hostname errorCodes}}}',
+                        variables: null,
+                        operationName: "recaptchaV2"
+                    }),
+                    headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-type': 'application/json'
+                    },
+                    success: function (data) {
+                        console.log(data)
+                      if (data.data.recaptchaV2.captchaResult.success) {
+                        document.getElementById("sp4").innerText = '验证通过'
+                      } else {
+                        document.getElementById("sp4").innerText = '验证未通过'
+                      }
+                    }
+                })
+            }
+        }
+    </script>
+</body>
+</html>

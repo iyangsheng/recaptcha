@@ -1,0 +1,29 @@
+type Query{
+
+    # 使用"我不是机器人"复选框验证用户
+    recaptchaV2(verifyCode: String): CaptchaData
+
+    # 在后台验证用户
+    recaptchaInvisible(verifyCode: String): CaptchaData
+}
+
+type CaptchaData{
+    code: Int
+    message: String
+    captchaResult: CaptchaResult
+}
+
+type CaptchaResult{
+
+    # 验证结果
+    success: Boolean
+
+    # 验证时间
+    challengeTs: String
+
+    # 域名
+    hostname: String
+
+    # 错误码
+    errorCodes: [String]
+}
